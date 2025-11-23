@@ -2,8 +2,16 @@ const express = require("express");
 
 const app = express();
 
-app.use((req, res) => {
-  res.send("Hello from the server using nodemon.");
+app.use("/abc", (req, res) => {
+  res.send("Abc route");
+});
+
+app.use("/xyz", (req, res) => {
+  res.send("Xyz route");
+});
+
+app.use("/", (req, res) => {
+  res.send("Default route");
 });
 
 app.listen(3000, () => {
