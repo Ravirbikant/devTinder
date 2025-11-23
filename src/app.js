@@ -2,12 +2,16 @@ const express = require("express");
 
 const app = express();
 
-app.use("/abc", (req, res) => {
-  res.send("Abc route");
+app.get("/user", (req, res) => {
+  res.send({ firstName: "Oreo", lastName: "Sunfeast" });
 });
 
-app.use("/xyz", (req, res) => {
-  res.send("Xyz route");
+app.post("/user", (req, res) => {
+  res.send("User added successfully");
+});
+
+app.delete("/user", (req, res) => {
+  res.send("User deleted successfully");
 });
 
 app.use("/", (req, res) => {
