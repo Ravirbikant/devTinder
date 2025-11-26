@@ -1,19 +1,13 @@
 const express = require("express");
 
 const app = express();
+const { adminAuth } = require("./middlewares/admin");
 
-app.use(
-  "/user",
-  (req, res, next) => {
-    console.log("Inside first");
-    // res.send("Handler 1");
-    next();
-  },
-  (req, res) => {
-    console.log("Inside second");
-    res.send("Handler 2");
-  }
-);
+app.use("/admin", adminAuth);
+
+app.get("/admin/details", (req, res, next) => {
+  res.send("Admin details data");
+});
 
 app.listen("3000", () => {
   console.log("Server is listening on port 3000");
