@@ -9,6 +9,30 @@ app.get("/health", (req, res) => {
   res.send("App is running.");
 });
 
+app.get("/user", async (req, res) => {
+  const emailId = req.body.emailId;
+
+  try {
+    const user = await User.find({ emailId: emailId });
+
+    if (user.length === 0) res.status(404).send("User not found");
+    else res.send(user);
+  } catch (err) {
+    res.status(400).send("Something went wrong " + err);
+  }
+});
+
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    if (users.length === 0) res.status(404).send("No user found");
+    else res.send(users);
+  } catch (err) {
+    res.status(400).send("Something went wrong " + err);
+  }
+});
+
 app.post("/signup", async (req, res) => {
   const user = new User(req.body);
   try {
