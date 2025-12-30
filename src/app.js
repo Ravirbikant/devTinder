@@ -4,8 +4,12 @@ const { validateSignUpData } = require("./utils/validation.js");
 const connectDB = require("./config/database.js");
 const User = require("./models/user.js");
 const app = express();
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const SPECIAL_KEY = "DEV@Tinder$790";
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/health", (req, res) => {
   res.send("App is running.");
@@ -66,9 +70,28 @@ app.post("/login", async (req, res) => {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) throw new Error("Invalid credentials");
 
+    const token = await jwt.sign({ _id: user._id }, SPECIAL_KEY);
+
+    res.cookie("token", token);
+
     res.send("Login successful");
   } catch (error) {
     res.status(400).send("Error : " + error);
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const { token } = req.cookies;
+    if (!token) throw new Error("Invalid credentials");
+
+    const { _id } = await jwt.verify(token, SPECIAL_KEY);
+
+    const user = await User.findOne({ _id: _id });
+
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("Error getting profile : " + err);
   }
 });
 
