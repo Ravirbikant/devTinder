@@ -54,12 +54,25 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const userData = req.body;
 
+  const ALLOWED_UPDATES = ["age", "skills"];
   try {
-    const user = await User.findByIdAndUpdate(userId, userData);
+    const isUpdateAllowed = Object.keys(userData).every((key) =>
+      ALLOWED_UPDATES.includes(key)
+    );
+
+    if (!isUpdateAllowed)
+      throw new Error("Keys that cannot be updated are present in the request");
+
+    if (userData.skills.length > 10)
+      throw new Error("Skills cannot be more than 10");
+
+    const user = await User.findByIdAndUpdate(userId, userData, {
+      runValidators: true,
+    });
     console.log(user);
     res.send("User data updated successfully");
   } catch (err) {
