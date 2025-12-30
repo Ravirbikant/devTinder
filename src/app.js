@@ -23,6 +23,7 @@ app.get("/user", async (req, res) => {
 });
 
 app.get("/feed", async (req, res) => {
+  console.log("Request recieved");
   try {
     const users = await User.find({});
 
@@ -40,6 +41,29 @@ app.post("/signup", async (req, res) => {
     res.send("New user added successfully");
   } catch (err) {
     res.status(400).send("User could not be added " + err);
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    await User.findByIdAndDelete({ _id: userId });
+    res.send("User deleted successfully");
+  } catch (err) {
+    res.status(400).send("Something went wrong : " + err);
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const userData = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, userData);
+    console.log(user);
+    res.send("User data updated successfully");
+  } catch (err) {
+    res.status(400).send("Something went wrong : " + err);
   }
 });
 
