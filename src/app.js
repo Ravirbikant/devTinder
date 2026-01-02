@@ -1,5 +1,4 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
 const { validateSignUpData } = require("./utils/validation.js");
 const connectDB = require("./config/database.js");
 const User = require("./models/user.js");
@@ -68,13 +67,10 @@ app.post("/login", async (req, res) => {
 
     if (!user) throw new Error("Invalid credentials");
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
     if (!isPasswordCorrect) throw new Error("Invalid credentials");
 
-    const token = await jwt.sign({ _id: user._id }, SPECIAL_KEY, {
-      expiresIn: "1h",
-    });
-
+    const token = await user.getJWT();
     res.cookie("token", token, {
       expires: new Date(Date.now() + 8 * 3600000),
     });
