@@ -7,6 +7,7 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const SPECIAL_KEY = "DEV@Tinder$790";
+const { userAuth } = require("./middlewares/admin.js");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -70,9 +71,13 @@ app.post("/login", async (req, res) => {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) throw new Error("Invalid credentials");
 
-    const token = await jwt.sign({ _id: user._id }, SPECIAL_KEY);
+    const token = await jwt.sign({ _id: user._id }, SPECIAL_KEY, {
+      expiresIn: "1h",
+    });
 
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
 
     res.send("Login successful");
   } catch (error) {
@@ -80,15 +85,9 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const { token } = req.cookies;
-    if (!token) throw new Error("Invalid credentials");
-
-    const { _id } = await jwt.verify(token, SPECIAL_KEY);
-
-    const user = await User.findOne({ _id: _id });
-
+    const user = req.user;
     res.send(user);
   } catch (err) {
     res.status(400).send("Error getting profile : " + err);
