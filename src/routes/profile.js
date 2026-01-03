@@ -30,7 +30,6 @@ profileRouter.patch("/user/:userId", async (req, res) => {
     const user = await User.findByIdAndUpdate(userId, userData, {
       runValidators: true,
     });
-    console.log(user);
     res.send("User data updated successfully");
   } catch (err) {
     res.status(400).send("Something went wrong : " + err);
