@@ -1,8 +1,9 @@
 const express = require("express");
 const profileRouter = express();
 const { userAuth } = require("../middlewares/admin.js");
+const { validateEditProfileData } = require("../utils/validation.js");
 
-profileRouter.get("/profile", userAuth, async (req, res) => {
+profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
     res.send(user);
@@ -11,28 +12,21 @@ profileRouter.get("/profile", userAuth, async (req, res) => {
   }
 });
 
-profileRouter.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const userData = req.body;
-
-  const ALLOWED_UPDATES = ["age", "skills"];
+profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
-    const isUpdateAllowed = Object.keys(userData).every((key) =>
-      ALLOWED_UPDATES.includes(key)
-    );
+    validateEditProfileData(req);
+    const editUserData = req.user;
 
-    if (!isUpdateAllowed)
-      throw new Error("Keys that cannot be updated are present in the request");
-
-    if (userData.skills.length > 10)
-      throw new Error("Skills cannot be more than 10");
-
-    const user = await User.findByIdAndUpdate(userId, userData, {
-      runValidators: true,
+    Object.keys(req.body).map((key) => {
+      console.log(key, req.body[key]);
+      editUserData[key] = req.body[key];
     });
-    res.send("User data updated successfully");
+
+    await editUserData.save();
+
+    res.send({ message: "User updated successfully", editUserData });
   } catch (err) {
-    res.status(400).send("Something went wrong : " + err);
+    res.status(400).send("Invalid edit operation : " + err);
   }
 });
 
