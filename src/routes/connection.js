@@ -15,6 +15,16 @@ connectionRouter.post(
 
       if (!user) throw new Error("User not found");
 
+      const isConnectionAlreadyPresent = await ConnectionRequestModel.findOne({
+        $or: [
+          { fromUserId: currentUserId, toUserId: userId },
+          { fromUserId: userId, toUserId: currentUserId },
+        ],
+      });
+
+      if (isConnectionAlreadyPresent)
+        throw new Error("Connection request already exists");
+
       const connectionRequest = new ConnectionRequestModel({
         fromUserId: currentUserId,
         toUserId: userId,
@@ -25,6 +35,7 @@ connectionRouter.post(
 
       res.json({ message: "Connection request sent successfully" });
     } catch (err) {
+      console.log(err);
       res
         .status(400)
         .json({ message: "Error sending connection request : " + err });
