@@ -3,23 +3,29 @@ const { Schema } = mongoose;
 
 const connectionRequestSchema = new Schema(
   {
-    from: {
+    fromUserId: {
       type: mongoose.ObjectId,
       required: true,
     },
-    to: {
+    toUserId: {
       type: mongoose.ObjectId,
       required: true,
     },
     connectionType: {
       type: String,
-      enum: ["interested, pass, accepted, rejected"],
-      message: `{VALUE} is not accepted connection type`,
+      enum: ["interested", "pass", "accepted", "rejected"],
       required: true,
     },
   },
   { timestamps: true }
 );
+
+connectionRequestSchema.pre("save", function (next) {
+  const connectionRequest = this;
+  if (connectionRequest.fromUserId.equals(connectionRequest.toUserId))
+    throw new Error("Cannot send request to yourself");
+  next();
+});
 
 const ConnectionRequestModel = mongoose.model(
   "ConnectionRequestModel",
