@@ -43,4 +43,37 @@ connectionRouter.post(
   }
 );
 
+// - POST /request/review/accepted/:userId
+connectionRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const { status, requestId } = req.params;
+      const ALLOWED_STATUS = ["accepted", "rejected"];
+
+      if (!ALLOWED_STATUS.includes(status)) throw new Error("Invalid status");
+
+      const connectionRequest = await ConnectionRequestModel.findOne({
+        _id: requestId,
+      });
+      if (!connectionRequest) throw new Error("No connection request found");
+      if (connectionRequest.connectionType !== "interested")
+        throw new Error("No request found");
+      if (!connectionRequest.toUserId.equals(req.user._id))
+        throw new Error("Incorrect User");
+
+      connectionRequest.connectionType = status;
+      const data = await connectionRequest.save();
+
+      res.json({ message: "Connection request " + status, data });
+    } catch (err) {
+      console.log(err);
+      res
+        .status(400)
+        .json({ message: "Error reviewing connection request : " + err });
+    }
+  }
+);
+
 module.exports = { connectionRouter };
