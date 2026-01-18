@@ -43,7 +43,6 @@ connectionRouter.post(
   }
 );
 
-// - POST /request/review/accepted/:userId
 connectionRouter.post(
   "/request/review/:status/:requestId",
   userAuth,
