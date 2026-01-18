@@ -20,5 +20,5 @@
 ## User APIs
 
 - GET /user/connections
-
+- GET /user/requests/interested
 - GET /user/feed

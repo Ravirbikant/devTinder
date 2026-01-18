@@ -11,6 +11,7 @@ const connectionRequestSchema = new Schema(
     toUserId: {
       type: mongoose.ObjectId,
       required: true,
+      ref: "User",
     },
     connectionType: {
       type: String,
