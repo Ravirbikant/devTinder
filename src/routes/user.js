@@ -2,6 +2,7 @@ const express = require("express");
 const userRouter = express();
 const { userAuth } = require("../middlewares/admin.js");
 const ConnectionRequestModel = require("../models/connectionRequest.js");
+const User = require("../models/user.js");
 
 const USER_SAFE_DATA = "firstName lastName";
 
@@ -45,4 +46,31 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
     res.status(400).json({ message: "Error getting connections: " + error });
   }
 });
+
+userRouter.get("/user/feed", userAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const connectionRequests = await ConnectionRequestModel.find({
+      $or: [{ fromUserId: userId }, { toUserId: userId }],
+    }).select("fromUserId toUserId");
+
+    const hiddenUsersFromFeed = new Set();
+
+    connectionRequests.forEach((req) => {
+      hiddenUsersFromFeed.add(req.fromUserId);
+      hiddenUsersFromFeed.add(req.toUserId);
+    });
+
+    const feedUsers = await User.find({
+      _id: { $nin: Array.from(hiddenUsersFromFeed) },
+    }).select(USER_SAFE_DATA);
+
+    console.log(feedUsers);
+    res.json({ message: "Feed fetched sucessfully : ", feedUsers });
+  } catch (err) {
+    res.status(400).json({ message: "Error getting feed : " + error });
+  }
+});
+
 module.exports = { userRouter };
