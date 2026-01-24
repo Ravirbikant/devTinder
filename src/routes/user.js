@@ -51,6 +51,15 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
   try {
     const userId = req.user._id;
 
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+
+    if (limit < 0 || limit > 50)
+      res.status(400).json({
+        message: "Invalid page size. Page size should be in the range of 1-50",
+      });
+    const skip = (page - 1) * limit;
+
     const connectionRequests = await ConnectionRequestModel.find({
       $or: [{ fromUserId: userId }, { toUserId: userId }],
     }).select("fromUserId toUserId");
@@ -64,9 +73,11 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
 
     const feedUsers = await User.find({
       _id: { $nin: Array.from(hiddenUsersFromFeed) },
-    }).select(USER_SAFE_DATA);
+    })
+      .select(USER_SAFE_DATA)
+      .skip(skip)
+      .limit(limit);
 
-    console.log(feedUsers);
     res.json({ message: "Feed fetched sucessfully : ", feedUsers });
   } catch (err) {
     res.status(400).json({ message: "Error getting feed : " + error });
