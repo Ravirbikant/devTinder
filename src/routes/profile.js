@@ -8,7 +8,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
     const user = req.user;
     res.send(user);
   } catch (err) {
-    res.status(400).send("Error getting profile : " + err);
+    res.status(401).send("Error getting profile : " + err);
   }
 });
 
